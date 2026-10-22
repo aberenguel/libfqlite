@@ -133,8 +133,12 @@ public class SerialTypeMatcher {
     				// no varint OR costrain does not match -> skip this an go on with the next
     				// bytes
     				if (value == -1 || !pattern.get(i).match(value)) {
-    					current++;
-    					buffer.position(current);
+    					/*
+    					 * restart right after the first byte of this (partial) match, otherwise
+    					 * a header starting inside the bytes consumed by the partial match
+    					 * would be skipped
+    					 */
+    					buffer.position(pos + 1);
     					/* and again, startRegion the beginning but with the next byte */
     					i = idx;
     					/* skip pattern matching step and try again */
@@ -212,15 +216,15 @@ public class SerialTypeMatcher {
 		int value = 0;
 		int b = 0;
 		int counter = 0;
-		int shift = 0;
 
 		// as long as we have a byte with most significant bit value 1
 		// there are more byte to read
 		// we only read a maximum of 3 bytes (8 bytes would be possible to)
+		// varints are big-endian: every byte contributes its 7 low bits, the
+		// most significant group comes first
 		while ((((b = buffer.get()) & 0x80) != 0) && counter < 3) {
 			counter++;
-			shift += 7;
-			value |= (b & 0x7F) << shift;
+			value = (value << 7) | (b & 0x7F);
 		}
 		// last rightmost byte has always need to have a 0 at the MSB
 		// hence, if there is a 1 -> no varint value
@@ -228,7 +232,7 @@ public class SerialTypeMatcher {
 			return -1;
 
 		// return a normalized integer value
-		return value | b;
+		return (value << 7) | b;
 	}
 
 	
