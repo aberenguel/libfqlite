@@ -249,7 +249,8 @@ public class TableDescriptor extends AbstractDescriptor implements Comparable<Ta
                     info("Attention! integer primary key: " + names.get(i));
                     /* Note: this column has the columntype "00" */
                     rowidcolumn = names.get(i);
-                    pattern.change2RowID(i);
+                    /* index 0 of the pattern is the header length constraint, so column i is at i + 1 */
+                    pattern.change2RowID(i + 1);
                 }
             }   
         }

@@ -7,7 +7,11 @@ public class FloatingConstrain implements Constraint {
 	@Override
 	public boolean match(int value) {
 	
-		if (value == 7)
+		/*
+		 * NULL, an IEEE 754 float (7) or an integer (1..6, 8, 9): SQLite stores REAL
+		 * values without fractional part in columns with REAL affinity as integers.
+		 */
+		if (value >= 0 && value <= 9)
 			return true;
 		else 
 			return false;
@@ -15,7 +19,7 @@ public class FloatingConstrain implements Constraint {
 	
 	@Override
 	public String toString(){
-		return "07";
+		return "00..09";
 	}
 
 }
